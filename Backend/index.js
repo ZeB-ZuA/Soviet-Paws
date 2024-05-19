@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MongoDB setup
-mongoose.connect('mongodb://localhost:27017/pets', {
+mongoose.connect('mongodb+srv://sebastiansua90:1sxVnTTAMq7PnbqN@sovietpaws.i4jh25a.mongodb.net/?retryWrites=true&w=majority&appName=SovietPaws', {
   useUnifiedTopology: true
 });
 
@@ -19,7 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Pet schema
 const petSchema = new mongoose.Schema({
-  type: { type: String, enum: ['cat', 'dog'], required: true },
+  type: { type: String, required: true },
   name: { type: String, required: true },
   age: { type: Number, required: true },
   breed: { type: String, required: true },
@@ -47,7 +47,6 @@ app.post('/pets', upload.single('image'), async (req, res) => {
   try {
     const { type, name, age, breed } = req.body;
     const image = req.file.filename;
-
     const newPet = new Pet({ type, name, age, breed, image });
     await newPet.save();
     res.status(201).json({ message: 'Pet stored successfully' });
