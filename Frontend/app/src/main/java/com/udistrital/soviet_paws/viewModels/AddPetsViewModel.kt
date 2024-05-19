@@ -17,8 +17,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
-class AddPetsViewModel(private val petService: PetService, private val context: Context): ViewModel(){
-
+class AddPetsViewModel(private val petService: PetService, private val context: Context) : ViewModel() {
 
     private val _name = MutableLiveData<String>()
     val name: LiveData<String> get() = _name
@@ -60,7 +59,7 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
             val imageUri = _imageUri.value
 
             if (imageUri != null) {
-                val tempFile = uriToFile(imageUri, context)
+                val tempFile = uriToFile(imageUri)
                 val pet = Pet(
                     id = null,
                     name = name,
@@ -71,24 +70,24 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
                 )
                 petService.save(pet)
             } else {
-                // Handle the case when no image is selected
                 println("No image selected")
             }
         }
     }
 
-    private fun uriToFile(uri: Uri, context: Context): File {
+    private fun uriToFile(uri: Uri): File {
         val contentResolver: ContentResolver = context.contentResolver
-        val file = File(context.cacheDir, "temp_image")
-        val inputStream: InputStream? = contentResolver.openInputStream(uri)
-        val outputStream = FileOutputStream(file)
+        val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
+        val inputStream = contentResolver.openInputStream(uri)
+        val outputStream = FileOutputStream(tempFile)
+
         inputStream?.use { input ->
             outputStream.use { output ->
                 input.copyTo(output)
             }
         }
-        return file
+
+        return tempFile
     }
-
-
 }
+

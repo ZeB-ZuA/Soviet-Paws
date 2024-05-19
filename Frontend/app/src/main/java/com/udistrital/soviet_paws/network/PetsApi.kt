@@ -23,6 +23,6 @@ interface PetsApi {
         @Part("age") age: RequestBody,
         @Part("breed") breed: RequestBody
     ): Pet
-    @POST("filterPets")
+    @GET("filterPets")
    suspend fun filterByNameAndSort(name: String?, sortBy: String?): List<Pet>
 }
