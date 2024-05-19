@@ -12,6 +12,7 @@ object RetrofitClient{
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
+
     val petsApi: PetsApi by lazy {
         retrofit.create(PetsApi::class.java)
     }

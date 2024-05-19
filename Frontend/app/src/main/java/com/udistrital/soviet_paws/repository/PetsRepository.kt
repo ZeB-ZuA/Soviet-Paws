@@ -7,9 +7,4 @@ interface PetsRepository {
     fun save(pet: Pet)
     fun list():List<Pet>
     fun filterByNameAndSort(name: String?, sortBy: String?): List<Pet>
-
-
-
-
-
 }

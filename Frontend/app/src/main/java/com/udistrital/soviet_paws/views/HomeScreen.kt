@@ -88,13 +88,6 @@ fun HomeScreen(navController: NavController){
 
         }
     }
-
-
-
-
-
-
-
 }
 
 @Composable
@@ -126,7 +119,6 @@ fun Home(navController: NavController) {
                 color = Color.White)
         }
     }
-
 
 }
 @Composable
