@@ -22,8 +22,5 @@ fun AppNav() {
         composable(route=AppViews.listPets.route){
             ListPets(navController = navController)
         }
-
-
-
     }
 }

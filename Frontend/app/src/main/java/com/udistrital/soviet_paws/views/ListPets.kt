@@ -22,10 +22,16 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,67 +40,96 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
+import com.udistrital.soviet_paws.Navigation.AppViews
 import com.udistrital.soviet_paws.R
 import com.udistrital.soviet_paws.models.Pet
+import com.udistrital.soviet_paws.viewModels.AddPetsViewModel
+import com.udistrital.soviet_paws.viewModels.PetsListViewModel
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ListPets(navController: NavController){
-    val pets: List<Pet> = mutableListOf()
-    val searchQuery = "In"
+    val viewModel = PetsListViewModel()
+    val pets: List<Pet>? = viewModel.petsLiveData.value
+
     Surface(
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(),
         color = colorResource(R.color.soviet_red)) {
 
-
-
-        if(pets.isEmpty()){
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    modifier = Modifier
-                        .padding(5.dp),
-                    painter = painterResource(R.drawable.sad_dog_img),
-                    contentDescription = "No found" )
-                Text(
-                    modifier = Modifier.padding(30.dp),
-                    text = stringResource(R.string.no_pets_found),
-                    fontSize = 30.sp,
-                    color = Color.White)
-                Button(
-                    onClick = { },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(50.dp),
-                    colors = ButtonDefaults
-                        .buttonColors(
-                            containerColor = colorResource(R.color.soviet_yellow)
-                        ),) {
-                    Text(text = stringResource(R.string.add_pet), color = Color.Black)
-                }
+            if(pets.isNullOrEmpty()){
+                EmptyList()
             }
+            else{
+                Pets(pets)
+            }
+    }
+}
+
+@Composable
+fun EmptyList(){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Image(
+            modifier = Modifier
+                .padding(5.dp),
+            painter = painterResource(R.drawable.sad_dog_img),
+            contentDescription = "No found" )
+        Text(
+            modifier = Modifier.padding(30.dp),
+            text = stringResource(R.string.no_pets_found),
+            fontSize = 30.sp,
+            color = Color.White)
+        Button(
+            onClick = { AppViews.addPet.route },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(50.dp),
+            colors = ButtonDefaults
+                .buttonColors(
+                    containerColor = colorResource(R.color.soviet_yellow)
+                ),) {
+            Text(text = stringResource(R.string.add_pet), color = Color.Black)
         }
-        else{
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Pets(pets: List<Pet>){
+    var searchTerm by remember { mutableStateOf("") }
+    val filteredPets = pets.filter {
+        it.name.contains(searchTerm, ignoreCase = true) || it.type.contains(searchTerm, ignoreCase = true)
+    }
+    Column {
+        OutlinedTextField(
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color.White,
+                focusedBorderColor = Color.White,
+                focusedLabelColor = Color.White),
+            value = searchTerm,
+            onValueChange = { searchTerm = it },
+            label = { Text("Search") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(2),
             contentPadding = PaddingValues(5.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-
-            items(pets) { pet ->
-
+            items(filteredPets) { pet ->
                 val petImage = painterResource(R.drawable.pet_icon)
-                SearchScreen(
-                    searchQuery = searchQuery,
-                    searchResults = pets,
-                    onSearchQueryChange = {},
-                )
+
                 ElevatedCard(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 6.dp
@@ -118,7 +153,7 @@ fun ListPets(navController: NavController){
                         contentDescription = stringResource(R.string.pet_photo)
                     )
                     Text(
-                        stringResource(R.string.name, pet.name),
+                        pet.name,
                         fontSize = 30.sp,
                         modifier = Modifier.padding(10.dp)
                     )
@@ -143,35 +178,7 @@ fun ListPets(navController: NavController){
             }
 
         }
-        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchScreen(
-    searchQuery: String,
-    searchResults: List<Pet>,
-    onSearchQueryChange: (String) -> Unit
-) {
-    SearchBar(
-        query = searchQuery,
-        onQueryChange = onSearchQueryChange,
-        onSearch = {},
-        placeholder = {
-            Text(text = "Search movies")
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                tint = MaterialTheme.colorScheme.onSurface,
-                contentDescription = null
-            )
-        },
-        trailingIcon = {},
-        content = {},
-        active = true,
-        onActiveChange = {},
-        tonalElevation = 0.dp
-    )
-}
+
