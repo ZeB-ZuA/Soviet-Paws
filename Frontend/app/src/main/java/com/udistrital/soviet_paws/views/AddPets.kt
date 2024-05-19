@@ -1,17 +1,32 @@
 package com.udistrital.soviet_paws.views
 
+import PetService
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -21,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -28,19 +44,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.udistrital.soviet_paws.models.PetType
 import com.udistrital.soviet_paws.viewModels.AddPetsViewModel
 
 @Composable
 fun AddPets(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize()) {
-        val viewModel = AddPetsViewModel()
+        val petService = PetService()
+        val context = LocalContext.current
+        val viewModel = AddPetsViewModel(petService, context)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -52,11 +76,11 @@ fun AddPets(navController: NavController) {
 
 
     }
-
 }
+
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
-fun AddPetsPreview(){
+fun AddPetsPreview() {
     val navController = rememberNavController()
     AddPets(navController = navController)
 }
@@ -68,6 +92,7 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
     val type: String by viewModel.type.observeAsState(initial = "Select Pet Type")
     val age: Int by viewModel.age.observeAsState(initial = 0)
     val breed: String by viewModel.breed.observeAsState(initial = "Select Pet Breed")
+    val uri: Uri? by viewModel.imageUri.observeAsState()
 
 
     Column(
@@ -81,15 +106,84 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
 
         TypeInput(
             typeState = type,
-            OnTypeChange = { viewModel.setType(it) }
+            OnTypeChange = { viewModel.setType(it) },
+            OnBreedTypeChange = { viewModel.setBreed(it) }
         )
 
         AgeInput(
-            ageState= age,
-            onAgeChange = {viewModel.setAge(it)}
+            ageState = age,
+            onAgeChange = { viewModel.setAge(it) }
+        )
+
+        BreedInput(
+            breedState = breed,
+            OnBreedChange = { viewModel.setBreed(it) },
+            viewModel = viewModel
+        )
+
+        ImageInput(uriState = uri, onUriChange = { viewModel.setImageUri(it) })
+
+        SubmitButton(
+            textId = "Save",
+            onClick = { viewModel.save() }
         )
 
     }
+}
+
+@Composable
+fun ImageInput(uriState: Uri?, onUriChange: (Uri) -> Unit, labelId: String = "ImageUri") {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val bitmap = remember { mutableStateOf<Bitmap?>(null) }
+    val laucher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            selectedImageUri = uri
+            uri?.let { onUriChange(it) }
+        }
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        selectedImageUri?.let {
+            if (Build.VERSION.SDK_INT < 28) {
+                bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+            } else {
+                val source = ImageDecoder.createSource(context.contentResolver, it)
+                bitmap.value = ImageDecoder.decodeBitmap(source)
+
+            }
+            bitmap.value?.let { btm ->
+                Image(
+                    bitmap = btm.asImageBitmap(), contentDescription = null, modifier = Modifier
+                        .size(200.dp)
+                        .padding(20.dp)
+                )
+            }
+        }
+        Button(onClick = {
+            laucher.launch("image/*")
+            println(selectedImageUri)
+        }) {
+            Text(text = "Submit image")
+        }
+    }
+}
+
+@Composable
+fun SubmitButton(textId: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(vertical = 3.dp, horizontal = 10.dp)
+            .fillMaxWidth(),
+        shape = RectangleShape,
+    ) {
+        Text(
+            text = textId, modifier = Modifier.padding(5.dp)
+        )
+    }
+
 }
 
 @Composable
@@ -105,7 +199,6 @@ fun AgeInput(ageState: Int, onAgeChange: (Int) -> Unit, labelId: String = "Age")
     )
 }
 
-
 @Composable
 fun NameInput(
     nameState: String, OnNameChange: (
@@ -114,42 +207,24 @@ fun NameInput(
 ) {
     InputField(valuesState = nameState, onValueChange = OnNameChange, labelId = labelId)
 }
+
 @Composable
-fun TypeInput(typeState: String, OnTypeChange: (String) -> Unit, labelId: String = "Type") {
+fun TypeInput(
+    typeState: String,
+    OnTypeChange: (String) -> Unit,
+    OnBreedTypeChange: (String) -> Unit,
+    labelId: String = "Type"
+) {
     var expanded by remember { mutableStateOf(false) }
-    var otherPetType by remember { mutableStateOf("") }
-    val petTypes = listOf(
-        "Dogs",
-        "Cats",
-        "Rabbits",
-        "Poultry",
-        "Hamsters",
-        "Fishes",
-        "Exotic Reptiles",
-        "Invertebrates",
-        "Horses",
-        "Cows",
-        "Others"
-    )
+    val petTypes = PetType.values().map { it.type }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        if (typeState == "Others") {
-            TextField(
-                value = otherPetType,
-                onValueChange = { otherPetType = it },
-                label = { Text("Enter other pet type") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OnTypeChange(otherPetType)
-        } else {
-            Text(
-                text = typeState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = { expanded = true })
-            )
-        }
-
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = typeState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { expanded = true })
+        )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -168,6 +243,7 @@ fun TypeInput(typeState: String, OnTypeChange: (String) -> Unit, labelId: String
                     },
                     onClick = {
                         OnTypeChange(petType)
+                        OnBreedTypeChange(petType)
                         expanded = false
                     }
                 )
@@ -176,11 +252,67 @@ fun TypeInput(typeState: String, OnTypeChange: (String) -> Unit, labelId: String
     }
 }
 
+@Composable
+fun BreedInput(
+    breedState: String,
+    OnBreedChange: (String) -> Unit,
+    labelId: String = "Breed",
+    viewModel: AddPetsViewModel
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val type = viewModel.breed.value ?: ""
+    val breeds = when (type) {
+        "Dogs" -> PetType.DOGS.breeds
+        "Cats" -> PetType.CATS.breeds
+        "Rabbits" -> PetType.RABBITS.breeds
+        "Poultry" -> PetType.POULTRY.breeds
+        "Hamsters" -> PetType.HAMSTERS.breeds
+        "Fishes" -> PetType.FISHES.breeds
+        "Exotic Reptiles" -> PetType.EXOTIC_REPTILES.breeds
+        "Invertebrates" -> PetType.INVERTEBRATES.breeds
+        "Horses" -> PetType.HORSES.breeds
+        "Cows" -> PetType.COWS.breeds
+        else -> emptyList()
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = breedState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { expanded = true })
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            breeds.forEach { breed ->
+                DropdownMenuItem(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(),
+                    text = {
+                        Text(
+                            text = breed,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    },
+                    onClick = {
+                        OnBreedChange(breed)
+                        expanded = false
+                    }
+                )
+            }
+
+        }
+    }
+}
 
 @Composable
 fun InputField(
     valuesState: String, onValueChange: (String) -> Unit, labelId: String
-
 ) {
     OutlinedTextField(
         value = valuesState,
@@ -193,18 +325,3 @@ fun InputField(
 
     )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

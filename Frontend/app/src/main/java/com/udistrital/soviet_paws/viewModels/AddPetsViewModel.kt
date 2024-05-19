@@ -1,10 +1,24 @@
 package com.udistrital.soviet_paws.viewModels
 
+import PetService
+import android.content.ContentResolver
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.udistrital.soviet_paws.models.Pet
+import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 
-class AddPetsViewModel(): ViewModel(){
+class AddPetsViewModel(private val petService: PetService, private val context: Context): ViewModel(){
+
 
     private val _name = MutableLiveData<String>()
     val name: LiveData<String> get() = _name
@@ -14,6 +28,8 @@ class AddPetsViewModel(): ViewModel(){
     val age: LiveData<Int> get() = _age
     private val _breed = MutableLiveData<String>()
     val breed: LiveData<String> get() = _breed
+    private val _imageUri = MutableLiveData<Uri?>()
+    val imageUri: LiveData<Uri?> get() = _imageUri
 
     fun setName(name: String) {
         _name.value = name
@@ -30,4 +46,49 @@ class AddPetsViewModel(): ViewModel(){
     fun setBreed(breed: String) {
         _breed.value = breed
     }
+
+    fun setImageUri(uri: Uri?) {
+        _imageUri.value = uri
+    }
+
+    fun save() {
+        viewModelScope.launch {
+            val name = _name.value ?: ""
+            val type = _type.value ?: ""
+            val age = _age.value ?: 0
+            val breed = _breed.value ?: ""
+            val imageUri = _imageUri.value
+
+            if (imageUri != null) {
+                val tempFile = uriToFile(imageUri, context)
+                val pet = Pet(
+                    id = null,
+                    name = name,
+                    type = type,
+                    age = age,
+                    breed = breed,
+                    imageUri = Uri.fromFile(tempFile)
+                )
+                petService.save(pet)
+            } else {
+                // Handle the case when no image is selected
+                println("No image selected")
+            }
+        }
+    }
+
+    private fun uriToFile(uri: Uri, context: Context): File {
+        val contentResolver: ContentResolver = context.contentResolver
+        val file = File(context.cacheDir, "temp_image")
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val outputStream = FileOutputStream(file)
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
+    }
+
+
 }
