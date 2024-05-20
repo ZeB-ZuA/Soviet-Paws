@@ -65,7 +65,7 @@ fun ListPets(navController: NavController){
                 EmptyList()
             }
             else{
-                Pets(pets)
+                Pets(pets, navController)
             }
     }
 }
@@ -103,7 +103,7 @@ fun EmptyList(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Pets(pets: List<Pet>){
+fun Pets(pets: List<Pet>, navController: NavController){
     var searchTerm by remember { mutableStateOf("") }
     val filteredPets = pets.filter {
         it.name.contains(searchTerm, ignoreCase = true) || it.type.contains(searchTerm, ignoreCase = true)
@@ -171,7 +171,8 @@ fun Pets(pets: List<Pet>){
                             .buttonColors(
                                 containerColor = colorResource(R.color.soviet_yellow)
                             ),
-                        onClick = { /*TODO*/ }) {
+                        onClick = {
+                            navController.navigate("pet_details/1234") }) {
                         Text(stringResource(R.string.details), color = Color.Black)
                     }
                 }

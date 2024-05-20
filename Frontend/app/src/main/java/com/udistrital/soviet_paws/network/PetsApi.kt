@@ -13,6 +13,8 @@ interface PetsApi {
 
     @GET("pets")
     suspend fun getAll(): List<Pet>
+    @GET("pet")
+    suspend fun get(): Pet
 
     @Multipart
     @POST("pets")

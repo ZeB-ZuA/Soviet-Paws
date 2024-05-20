@@ -5,8 +5,5 @@ sealed class AppViews(val route: String) {
     object homeScreen : AppViews("home_screen")
     object addPet : AppViews("add_pet_screen")
     object listPets : AppViews("list_pets")
-
-
-
-
+    object petDetails : AppViews("pet_details")
 }

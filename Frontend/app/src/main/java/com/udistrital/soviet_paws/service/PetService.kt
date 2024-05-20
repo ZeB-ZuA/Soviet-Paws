@@ -12,8 +12,8 @@ import java.io.File
 
 class PetService: PetsRepository {
 
-        override fun save(pet: Pet) {
-            GlobalScope.launch {
+    override fun save(pet: Pet) {
+       GlobalScope.launch {
                 val imageFile = File(pet.imageUri?.path ?: "")
                 if (imageFile.exists()) {
                     val imagePart = MultipartBody.Part.createFormData(
@@ -41,20 +41,25 @@ class PetService: PetsRepository {
                     println("Image file not found: ${pet.imageUri?.path}")
                 }
             }
-        }
+    }
 
-        override fun list(): List<Pet> {
-            return runBlocking {
-                val response = RetrofitClient.petsApi.getAll()
-                response
-            }
+    override fun list(): List<Pet> {
+        return runBlocking {
+            val response = RetrofitClient.petsApi.getAll()
+            response
         }
+    }
 
     override fun filterByNameAndSort(name: String?, sortBy: String?): List<Pet> {
         TODO("Not yet implemented")
     }
 
-
+    override fun pet(): Pet {
+        return runBlocking {
+            val response = RetrofitClient.petsApi.get()
+            response
+        }
+    }
 }
 
 
