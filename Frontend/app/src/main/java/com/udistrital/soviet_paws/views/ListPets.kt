@@ -1,6 +1,7 @@
 package com.udistrital.soviet_paws.views
 
 import android.graphics.drawable.PaintDrawable
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,7 @@ import java.util.Locale
 
 
 @Composable
-fun ListPets(navController: NavController){
+fun ListPets(navController: NavController) {
     val viewModel = PetsListViewModel()
     val pets: List<Pet>? = viewModel.petsLiveData.value
 
@@ -59,19 +60,19 @@ fun ListPets(navController: NavController){
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(),
-        color = colorResource(R.color.soviet_red)) {
+        color = colorResource(R.color.soviet_red)
+    ) {
 
-            if(pets.isNullOrEmpty()){
-                EmptyList()
-            }
-            else{
-                Pets(pets, navController)
-            }
+        if (pets.isNullOrEmpty()) {
+            EmptyList()
+        } else {
+            Pets(pets, navController)
+        }
     }
 }
 
 @Composable
-fun EmptyList(){
+fun EmptyList() {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -81,12 +82,14 @@ fun EmptyList(){
             modifier = Modifier
                 .padding(5.dp),
             painter = painterResource(R.drawable.sad_dog_img),
-            contentDescription = "No found" )
+            contentDescription = "No found"
+        )
         Text(
             modifier = Modifier.padding(30.dp),
             text = stringResource(R.string.no_pets_found),
             fontSize = 30.sp,
-            color = Color.White)
+            color = Color.White
+        )
         Button(
             onClick = { AppViews.addPet.route },
             modifier = Modifier
@@ -95,7 +98,8 @@ fun EmptyList(){
             colors = ButtonDefaults
                 .buttonColors(
                     containerColor = colorResource(R.color.soviet_yellow)
-                ),) {
+                ),
+        ) {
             Text(text = stringResource(R.string.add_pet), color = Color.Black)
         }
     }
@@ -103,17 +107,21 @@ fun EmptyList(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Pets(pets: List<Pet>, navController: NavController){
+fun Pets(pets: List<Pet>, navController: NavController) {
     var searchTerm by remember { mutableStateOf("") }
     val filteredPets = pets.filter {
-        it.name.contains(searchTerm, ignoreCase = true) || it.type.contains(searchTerm, ignoreCase = true)
+        it.name.contains(searchTerm, ignoreCase = true) || it.type.contains(
+            searchTerm,
+            ignoreCase = true
+        )
     }
     Column {
         OutlinedTextField(
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 containerColor = Color.White,
                 focusedBorderColor = Color.White,
-                focusedLabelColor = Color.White),
+                focusedLabelColor = Color.White
+            ),
             value = searchTerm,
             onValueChange = { searchTerm = it },
             label = { Text("Search") },
@@ -172,7 +180,10 @@ fun Pets(pets: List<Pet>, navController: NavController){
                                 containerColor = colorResource(R.color.soviet_yellow)
                             ),
                         onClick = {
-                            navController.navigate("pet_details/1234") }) {
+                            println(pet.name + pet.type + pet.age + pet.breed)
+                            val action = "${AppViews.petDetails.route}/${pet.name}/${pet.type}/${pet.age}/${pet.breed}"
+                            navController.navigate(action)
+                        }) {
                         Text(stringResource(R.string.details), color = Color.Black)
                     }
                 }

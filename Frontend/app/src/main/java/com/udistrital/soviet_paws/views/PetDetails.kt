@@ -21,9 +21,17 @@ import androidx.navigation.NavController
 import com.udistrital.soviet_paws.Navigation.AppNav
 import com.udistrital.soviet_paws.Navigation.AppViews
 import com.udistrital.soviet_paws.R
+import com.udistrital.soviet_paws.models.Pet
 
 @Composable
-fun PetDetails(navController: NavController, petId: String){
+fun PetDetails(
+    navController: NavController,
+    age: Int?,
+    name: String?,
+    type: String?,
+    breed: String?
+) {
+
     Surface(
         modifier = Modifier
             .fillMaxHeight()
@@ -33,22 +41,28 @@ fun PetDetails(navController: NavController, petId: String){
         Column(
             modifier = Modifier.padding(10.dp)
         ) {
-            Image(painter = painterResource(id = R.drawable.pet_icon),
+            Image(
+                painter = painterResource(id = R.drawable.pet_icon),
                 contentDescription = "",
                 alignment = Alignment.Center,
                 modifier = Modifier
                     .padding(30.dp)
                     .height(300.dp)
-                    .align(Alignment.CenterHorizontally),)
+                    .align(Alignment.CenterHorizontally),
+            )
             Text(
-                text = "Pet Details",
+                text = name.toString(),
                 color = Color.White,
                 fontSize = 40.sp,
-                )
-            Text(text = "Pet Details", color = Color.White, fontSize = 30.sp,)
-            Text(text = "Pet Details", color = Color.White, fontSize = 30.sp,)
-            Button(onClick = { AppViews.listPets.route }) {
-                Text(text = "Back to list", fontSize = 30.sp,)
+            )
+            Text(text = age.toString(), color = Color.White, fontSize = 30.sp)
+            Text(text = type.toString(), color = Color.White, fontSize = 30.sp)
+            Text(text = breed.toString(), color = Color.White, fontSize = 30.sp)
+            Button(onClick = {
+                        navController.navigate(AppViews.listPets.route)
+
+            }) {
+                Text(text = "Back to list", fontSize = 30.sp)
             }
         }
     }

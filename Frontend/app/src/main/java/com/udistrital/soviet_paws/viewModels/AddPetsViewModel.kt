@@ -61,7 +61,7 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
             if (imageUri != null) {
                 val tempFile = uriToFile(imageUri)
                 val pet = Pet(
-                    id = null,
+
                     name = name,
                     type = type,
                     age = age,
