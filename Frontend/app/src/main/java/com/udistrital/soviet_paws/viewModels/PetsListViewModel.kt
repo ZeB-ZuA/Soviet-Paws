@@ -40,8 +40,6 @@ class PetsListViewModel(private val context: Context) : ViewModel() {
             val filterPets = petsRepository.filterByNameAndSort(name, shortBy)
 
         }
-
-
     }
 
 

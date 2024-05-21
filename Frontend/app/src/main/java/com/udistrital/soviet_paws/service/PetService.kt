@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.udistrital.soviet_paws.models.Pet
 import com.udistrital.soviet_paws.network.RetrofitClient
 import com.udistrital.soviet_paws.repository.PetsRepository
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -19,6 +20,7 @@ import java.io.File
 class PetService(private val context: Context) : PetsRepository {
     private val _pets = MutableLiveData<List<Pet>>()
     val pets: LiveData<List<Pet>> = _pets
+    @OptIn(DelicateCoroutinesApi::class)
     override fun save(pet: Pet) {
         GlobalScope.launch {
             val uri = Uri.parse(pet.image)
@@ -46,7 +48,7 @@ class PetService(private val context: Context) : PetsRepository {
                         breedPart
                     )
                 } catch (e: Exception) {
-                    Log.d("PetSercive", "Saving Pet Error: ${e.message}")
+                    Log.d("PetService", "Saving Pet Error: ${e.message}")
                 }
             }
         }

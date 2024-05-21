@@ -11,12 +11,14 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +28,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.AlertDialogDefaults.shape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -47,32 +53,58 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.udistrital.soviet_paws.Navigation.AppNav
+import com.udistrital.soviet_paws.Navigation.AppViews
+import com.udistrital.soviet_paws.R
 import com.udistrital.soviet_paws.models.PetType
 import com.udistrital.soviet_paws.viewModels.AddPetsViewModel
 
 @Composable
 fun AddPets(navController: NavController) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        color = colorResource(R.color.soviet_red),
+        modifier = Modifier.fillMaxSize()) {
         val context = LocalContext.current
         val petService = PetService(context)
-
         val viewModel = AddPetsViewModel(petService, context)
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            PetForm(navController, viewModel)
-
+            Spacer(modifier = Modifier.size(50.dp))
+            Text(text = "Add pet",
+                fontSize = 30.sp,
+                modifier = Modifier.padding(40.dp),
+                color = Color.White)
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White,
+                ),
+                shape = RoundedCornerShape(
+                        topEnd = 30.dp,
+                        topStart = 30.dp,
+                        bottomEnd = 0.dp,
+                        bottomStart = 0.dp
+                    ),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(Alignment.CenterHorizontally),
+            ){
+                PetForm(navController, viewModel)
+            }
         }
 
 
@@ -97,9 +129,12 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
 
 
     Column(
+        modifier= Modifier.padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.size(30.dp))
+
         NameInput(
             nameState = name,
             OnNameChange = { viewModel.setName(it) }
@@ -122,7 +157,11 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
             viewModel = viewModel
         )
 
+        Spacer(modifier = Modifier.size(10.dp))
+
         ImageInput(uriState = uri, onUriChange = { viewModel.setImageUri(it) })
+
+        Spacer(modifier = Modifier.size(10.dp))
 
         SubmitButton(
             textId = "Save",
@@ -130,6 +169,13 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
             viewModel.printInfo()}
         )
 
+        Button(
+            shape = RectangleShape,
+            onClick = {  navController.navigate(AppViews.homeScreen.route) },
+             modifier = Modifier
+                 .fillMaxWidth()) {
+            Text("Cancel")
+        }
     }
 }
 
@@ -173,7 +219,12 @@ fun ImageInput(uriState: String?, onUriChange: (String) -> Unit, labelId: String
             )
         }
 
-        Button(onClick = { launcher.launch("image/*") }) {
+        Button(
+            colors = ButtonDefaults
+                .buttonColors(
+                    containerColor = colorResource(R.color.soviet_red)
+                ),
+            onClick = { launcher.launch("image/*") }) {
             Text(text = "Select Image")
         }
     }
@@ -186,9 +237,12 @@ fun SubmitButton(textId: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
-            .padding(vertical = 3.dp, horizontal = 10.dp)
             .fillMaxWidth(),
         shape = RectangleShape,
+        colors = ButtonDefaults
+            .buttonColors(
+                containerColor = colorResource(R.color.soviet_red)
+            ),
     ) {
         Text(
             text = textId, modifier = Modifier.padding(5.dp)
@@ -228,10 +282,13 @@ fun TypeInput(
     var expanded by remember { mutableStateOf(false) }
     val petTypes = PetType.values().map { it.type }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .height(60.dp)) {
         Text(
             text = typeState,
             modifier = Modifier
+                .padding(16.dp)
                 .fillMaxWidth()
                 .clickable(onClick = { expanded = true })
         )
@@ -289,10 +346,10 @@ fun BreedInput(
         Text(
             text = breedState,
             modifier = Modifier
+                .padding(16.dp)
                 .fillMaxWidth()
                 .clickable(onClick = { expanded = true })
         )
-
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },

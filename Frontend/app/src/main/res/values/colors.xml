@@ -10,8 +10,8 @@
 
     //custom
 
-    <color name="soviet_red">#fb6066</color>
-    <color name="soviet_yellow">#fdd86e</color>
+    <color name="soviet_red">#e20405</color>
+    <color name="soviet_yellow">#ecbe25</color>
     <color name="orange">#ffa463</color>
     <color name="yellow_ligth">#ffefc1</color>
 </resources>
