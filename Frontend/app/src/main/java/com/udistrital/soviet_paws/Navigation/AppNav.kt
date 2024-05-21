@@ -27,13 +27,14 @@ fun AppNav() {
         composable(route = AppViews.listPets.route) {
             ListPets(navController = navController)
         }
-        composable(route =  AppViews.petDetails.route + "/{name}/{type}/{age}/{breed}") { backStackEntry ->
+        composable(route =  AppViews.petDetails.route + "/{name}/{type}/{age}/{breed}/{image}") { backStackEntry ->
             val arguments = requireNotNull(backStackEntry.arguments)
             val age = arguments.getString("age")?.toInt()
             val name = arguments.getString("name")
             val type = arguments.getString("type")
             val breed = arguments.getString("breed")
-            PetDetails(navController = navController, age=age, name = name, type = type, breed = breed)
+            val image = Uri.decode(arguments.getString("image"))
+            PetDetails(navController = navController, age=age, name = name, type = type, breed = breed, image = image)
         }
 
 
