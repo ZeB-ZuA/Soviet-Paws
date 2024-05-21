@@ -10,37 +10,38 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
-class PetService: PetsRepository {
+class PetService : PetsRepository {
 
     override fun save(pet: Pet) {
-       GlobalScope.launch {
-                val imageFile = File(pet.imageUri?.path ?: "")
-                if (imageFile.exists()) {
-                    val imagePart = MultipartBody.Part.createFormData(
-                        "image",
-                        imageFile.name,
-                        imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+        GlobalScope.launch {
+            val imageFile = File(pet.imageUri?.path ?: "")
+            if (imageFile.exists()) {
+                val imagePart = MultipartBody.Part.createFormData(
+                    "image",
+                    imageFile.name,
+                    imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+                )
+
+                val typePart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.type)
+                val namePart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.name)
+                val agePart =
+                    RequestBody.create("text/plain".toMediaTypeOrNull(), pet.age.toString())
+                val breedPart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.breed)
+
+                try {
+                    val response = RetrofitClient.petsApi.saveWithImage(
+                        imagePart,
+                        typePart,
+                        namePart,
+                        agePart,
+                        breedPart
                     )
-
-                    val typePart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.type)
-                    val namePart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.name)
-                    val agePart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.age.toString())
-                    val breedPart = RequestBody.create("text/plain".toMediaTypeOrNull(), pet.breed)
-
-                    try {
-                        val response = RetrofitClient.petsApi.saveWithImage(
-                            imagePart,
-                            typePart,
-                            namePart,
-                            agePart,
-                            breedPart
-                        )
-                    } catch (e: Exception) {
-                    }
-                } else {
-                    println("Image file not found: ${pet.imageUri?.path}")
+                } catch (e: Exception) {
                 }
+            } else {
+                println("Image file not found: ${pet.imageUri?.path}")
             }
+        }
     }
 
     override fun list(): List<Pet> {
