@@ -62,8 +62,9 @@ import com.udistrital.soviet_paws.viewModels.AddPetsViewModel
 @Composable
 fun AddPets(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize()) {
-        val petService = PetService()
         val context = LocalContext.current
+        val petService = PetService(context)
+
         val viewModel = AddPetsViewModel(petService, context)
 
         Column(
@@ -92,7 +93,7 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
     val type: String by viewModel.type.observeAsState(initial = "Select Pet Type")
     val age: Int by viewModel.age.observeAsState(initial = 0)
     val breed: String by viewModel.breed.observeAsState(initial = "Select Pet Breed")
-    val uri: Uri? by viewModel.imageUri.observeAsState()
+    val uri: String? by viewModel.imageUri.observeAsState()
 
 
     Column(
@@ -125,50 +126,60 @@ fun PetForm(navController: NavController, viewModel: AddPetsViewModel) {
 
         SubmitButton(
             textId = "Save",
-            onClick = { viewModel.save() }
+            onClick = { viewModel.save()
+            viewModel.printInfo()}
         )
 
     }
 }
 
 @Composable
-fun ImageInput(uriState: Uri?, onUriChange: (Uri) -> Unit, labelId: String = "ImageUri") {
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+fun ImageInput(uriState: String?, onUriChange: (String) -> Unit, labelId: String = "ImageUri") {
+    var selectedImageUri by remember { mutableStateOf<Uri?>(uriState?.let { Uri.parse(it) }) }
     val context = LocalContext.current
     val bitmap = remember { mutableStateOf<Bitmap?>(null) }
-    val laucher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-            selectedImageUri = uri
-            uri?.let { onUriChange(it) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+        uri?.let { onUriChange(it.toString()) }
+    }
+
+    LaunchedEffect(selectedImageUri) {
+        selectedImageUri?.let { uri ->
+            bitmap.value = if (Build.VERSION.SDK_INT < 28) {
+                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            } else {
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                ImageDecoder.decodeBitmap(source)
+            }
         }
+    }
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        selectedImageUri?.let {
-            if (Build.VERSION.SDK_INT < 28) {
-                bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-            } else {
-                val source = ImageDecoder.createSource(context.contentResolver, it)
-                bitmap.value = ImageDecoder.decodeBitmap(source)
+        Text(text = labelId)
 
-            }
-            bitmap.value?.let { btm ->
-                Image(
-                    bitmap = btm.asImageBitmap(), contentDescription = null, modifier = Modifier
-                        .size(200.dp)
-                        .padding(20.dp)
-                )
-            }
+        bitmap.value?.let { bmp ->
+            Image(
+                bitmap = bmp.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(20.dp)
+            )
         }
-        Button(onClick = {
-            laucher.launch("image/*")
-            println(selectedImageUri)
-        }) {
-            Text(text = "Submit image")
+
+        Button(onClick = { launcher.launch("image/*") }) {
+            Text(text = "Select Image")
         }
     }
 }
+
+
 
 @Composable
 fun SubmitButton(textId: String, onClick: () -> Unit) {
@@ -183,7 +194,6 @@ fun SubmitButton(textId: String, onClick: () -> Unit) {
             text = textId, modifier = Modifier.padding(5.dp)
         )
     }
-
 }
 
 @Composable

@@ -88,6 +88,15 @@ app.get('/pets/filter', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Service 4: Delete all pets
+app.delete('/pets', async (req, res) => {
+  try {
+    await Pet.deleteMany({});
+    res.json({ message: 'All pets deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Start server
 app.listen(PORT, () => {
