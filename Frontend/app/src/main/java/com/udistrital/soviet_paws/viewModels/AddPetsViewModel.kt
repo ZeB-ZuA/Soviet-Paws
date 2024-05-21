@@ -10,12 +10,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.udistrital.soviet_paws.models.Pet
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 
 class AddPetsViewModel(private val petService: PetService, private val context: Context) : ViewModel() {
 
@@ -27,8 +23,8 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
     val age: LiveData<Int> get() = _age
     private val _breed = MutableLiveData<String>()
     val breed: LiveData<String> get() = _breed
-    private val _imageUri = MutableLiveData<Uri?>()
-    val imageUri: LiveData<Uri?> get() = _imageUri
+    private val _imageUri = MutableLiveData<String?>()
+    val imageUri: LiveData<String?> get() = _imageUri
 
     fun setName(name: String) {
         _name.value = name
@@ -46,7 +42,7 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
         _breed.value = breed
     }
 
-    fun setImageUri(uri: Uri?) {
+    fun setImageUri(uri: String?) {
         _imageUri.value = uri
     }
 
@@ -57,16 +53,14 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
             val age = _age.value ?: 0
             val breed = _breed.value ?: ""
             val imageUri = _imageUri.value
-
             if (imageUri != null) {
-                val tempFile = uriToFile(imageUri)
                 val pet = Pet(
-                    id = null,
+
                     name = name,
                     type = type,
                     age = age,
                     breed = breed,
-                    imageUri = Uri.fromFile(tempFile)
+                    image = imageUri
                 )
                 petService.save(pet)
             } else {
@@ -74,20 +68,14 @@ class AddPetsViewModel(private val petService: PetService, private val context: 
             }
         }
     }
+    fun printInfo(){
+        println("name: "+_name.value)
+        println("type: "+_type.value)
+        println("age: "+_age.value)
+        println("breed: "+_breed.value)
+        println("uri: "+_imageUri.value)
 
-    private fun uriToFile(uri: Uri): File {
-        val contentResolver: ContentResolver = context.contentResolver
-        val tempFile = File.createTempFile("temp_image", ".jpg", context.cacheDir)
-        val inputStream = contentResolver.openInputStream(uri)
-        val outputStream = FileOutputStream(tempFile)
-
-        inputStream?.use { input ->
-            outputStream.use { output ->
-                input.copyTo(output)
-            }
-        }
-
-        return tempFile
     }
+
 }
 

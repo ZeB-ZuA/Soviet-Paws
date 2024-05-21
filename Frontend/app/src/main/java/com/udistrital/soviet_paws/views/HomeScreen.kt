@@ -1,7 +1,14 @@
 package com.udistrital.soviet_paws.views
 
+import android.content.res.Resources
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ListAlt
@@ -14,21 +21,26 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.udistrital.soviet_paws.R
 import kotlinx.coroutines.launch
 
 
@@ -79,19 +91,38 @@ fun HomeScreen(navController: NavController){
 
         }
     }
-
-
-
-
-
-
-
 }
 
 @Composable
 fun Home(navController: NavController) {
-    Column {
-        Text(text = "Home")
+    Surface(
+        modifier = Modifier
+            .fillMaxSize(),
+        color = colorResource(R.color.soviet_red)) {
+        Column(
+            modifier = Modifier.padding(30.dp)
+        ) {
+            Image(
+                alignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .height(300.dp)
+                    .align(Alignment.CenterHorizontally),
+                painter = painterResource(R.drawable.dog_uss),
+                contentDescription = "pet-photo")
+            
+            Spacer(modifier = Modifier.height(50.dp))
+            Text(
+                text = "Welcome to",
+                fontSize = 20.sp,
+                color = Color.White)
+
+            Text(
+                text = "Soviet Paws",
+                fontWeight = FontWeight.Bold,
+                fontSize = 40.sp,
+                color = Color.White)
+        }
     }
 
 }
@@ -105,10 +136,13 @@ fun MyNavigationDrawerItem(
 ) {
     NavigationDrawerItem(
         colors = NavigationDrawerItemDefaults.colors(
-            selectedContainerColor = Color.Cyan,
+            selectedContainerColor = colorResource(R.color.soviet_red),
+            selectedTextColor = Color.White,
+            selectedIconColor = Color.White,
         ),
         modifier = Modifier.padding(6.dp),
-        label = { Text(text = label, fontWeight = FontWeight(500)) },
+        label = {
+            Text(text = label, fontWeight = FontWeight(500)) },
         icon = {
             Icon(
                 icon,

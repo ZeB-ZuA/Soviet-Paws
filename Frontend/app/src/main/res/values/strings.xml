@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Soviet-Paws</string>
+    <string name="tipo">Tipo: %1$s</string>
+    <string name="details">Ver detalles</string>
+    <string name="name">Name: %1$s</string>
+    <string name="no_pets_found">No pets found</string>
+    <string name="add_pet">Add pet</string>
+    <string name="pet_photo">pet-photo</string>
 </resources>
