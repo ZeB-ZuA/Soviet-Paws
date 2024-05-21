@@ -38,7 +38,7 @@ class PetsListViewModel(private val context: Context) : ViewModel() {
     fun filterPets(name: String?, shortBy: String?) {
         viewModelScope.launch {
             val filterPets = petsRepository.filterByNameAndSort(name, shortBy)
-
+            _petsLiveData.value = filterPets
         }
     }
 

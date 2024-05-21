@@ -2,6 +2,7 @@ package com.udistrital.soviet_paws.views
 
 import android.graphics.drawable.PaintDrawable
 import android.net.Uri
+import android.provider.CalendarContract
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -45,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,6 +122,10 @@ fun EmptyList() {
 @Composable
 
 fun Pets(pets: List<Pet>, navController: NavController) {
+
+    val context = LocalContext.current
+    val viewModel = PetsListViewModel(context)
+
     var searchTerm by remember { mutableStateOf("") }
     val items = listOf("Age", "Breed", "Type", "Name")
     var selectedItemIndex by remember { mutableStateOf(0) }
@@ -129,58 +136,64 @@ fun Pets(pets: List<Pet>, navController: NavController) {
             ignoreCase = true
         )
     }
+
     Column {
-        Row {
-            OutlinedTextField(
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = Color.White,
-                    focusedBorderColor = Color.White,
-                    focusedLabelColor = Color.White
+        OutlinedTextField(
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color.White,
+                focusedBorderColor = Color.White,
+                focusedLabelColor = Color.White
                 ),
                 value = searchTerm,
                 onValueChange = { searchTerm = it },
-                label = { Text("Name") },
+                label = { Text("Search") },
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(10.dp))
+
+        Box(modifier = Modifier
+            .height(70.dp)) {
+
+            Text(
+                text = "OrderBy: "+items[selectedItemIndex],
+                color= Color.White,
+                fontSize = 20.sp,
+                modifier = Modifier
+                    .height(100.dp)
+                    .padding(10.dp, 20.dp)
+                    .fillMaxWidth()
+                    .clickable { expanded = true }
             )
-            Box(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = items[selectedItemIndex],
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = true }
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items.forEach { itmen ->
-                        DropdownMenuItem(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .fillMaxWidth(),
-                            text = {
-                                Text(
-                                    text = itmen,
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-
-                            },
-                            onClick = {
-
-                                expanded = false
-                            }
-                        )
-                    }
-
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items.forEach { item ->
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .fillMaxWidth(),
+                        text = {
+                            Text(
+                                text = item,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        },
+                        onClick = {
+                            selectedItemIndex = items.indexOf(item)
+                            println(items[selectedItemIndex])
+                            viewModel.filterPets(searchTerm, items[selectedItemIndex])
+                            expanded = false
+                        }
+                    )
                 }
+
             }
+
         }
-Button(onClick = { /*TODO*/ }) {
-    
-}
+
         LazyVerticalStaggeredGrid(
             columns = StaggeredGridCells.Fixed(2),
             contentPadding = PaddingValues(5.dp),
@@ -242,7 +255,14 @@ Button(onClick = { /*TODO*/ }) {
             }
         }
     }
-}
+    }
+
+
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+
 
 
 @Composable
