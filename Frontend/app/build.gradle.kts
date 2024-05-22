@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidApplication) version ("8.1.3")
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-parcelize")
 }

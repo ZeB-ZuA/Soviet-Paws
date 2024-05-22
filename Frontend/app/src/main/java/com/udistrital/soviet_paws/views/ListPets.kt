@@ -189,7 +189,6 @@ fun Pets(pets: List<Pet>, navController: NavController) {
                         }
                     )
                 }
-
             }
 
         }

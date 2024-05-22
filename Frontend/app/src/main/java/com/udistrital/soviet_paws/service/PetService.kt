@@ -20,7 +20,7 @@ import java.io.File
 class PetService(private val context: Context) : PetsRepository {
     private val _pets = MutableLiveData<List<Pet>>()
     val pets: LiveData<List<Pet>> = _pets
-    @OptIn(DelicateCoroutinesApi::class)
+
     override fun save(pet: Pet) {
         GlobalScope.launch {
             val uri = Uri.parse(pet.image)
@@ -65,6 +65,7 @@ class PetService(private val context: Context) : PetsRepository {
         return runBlocking {
             try {
                 val filtredPets = RetrofitClient.petsApi.filterByNameAndSort(name, sortBy)
+                Log.d("MascotaServicio", "se filtran")
                 filtredPets
             } catch (e: Exception) {
                 Log.e("PetService", "Filter pets error: ${e.message}")

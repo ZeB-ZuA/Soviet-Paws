@@ -12,12 +12,12 @@ import kotlinx.coroutines.launch
 
 class PetsListViewModel(private val context: Context) : ViewModel() {
 
-    private lateinit var petsRepository: PetService
+    private val petsRepository: PetService = PetService(context)
     private val _petsLiveData = MutableLiveData<List<Pet>>()
     val petsLiveData: LiveData<List<Pet>> = _petsLiveData
 
     init {
-        petsRepository = PetService(context)
+
         loadPets()
         //printPets()
     }
@@ -38,10 +38,9 @@ class PetsListViewModel(private val context: Context) : ViewModel() {
     fun filterPets(name: String?, shortBy: String?) {
         viewModelScope.launch {
             val filterPets = petsRepository.filterByNameAndSort(name, shortBy)
+            println(filterPets)
             _petsLiveData.value = filterPets
         }
     }
-
-
 
 }
